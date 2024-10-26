@@ -18,7 +18,8 @@ export default [
 	{
 		languageOptions: {
 			globals: {
-				console: true
+				console: true,
+				fetch: true
 			}
 		},
 		rules: {
