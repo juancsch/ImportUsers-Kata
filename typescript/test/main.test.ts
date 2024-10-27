@@ -2,7 +2,7 @@
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
 
-import { processUsers } from '../src/main.js'
+import { processUsers } from '../src/processUsers.js'
 
 void describe('Import User Kata', () => {
 
