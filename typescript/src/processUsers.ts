@@ -4,23 +4,10 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 export async function processUsers (log = console.log): Promise<void> {
-
-	// Parse CSV file
-	const csvProvider = await processUsersCSV(readFile)
-
-	// Parse URL content
-	const b = await processUsersAPI(fetch)
-
-	/**
-	 * Shape: providers array[ id -> number,
-	 *                   email -> string
-	 *                   first_name -> string
-	 *                   last_name -> string ]
-	 */
-	const providers = csvProvider.concat(b) // merge arrays
-
-	// Print users
-	printUsers(providers, log)
+	const usersFromCSV = await processUsersCSV(readFile)
+	const usersFromAPI = await processUsersAPI(fetch)
+	const users = usersFromCSV.concat(usersFromAPI)
+	printUsers(users, log)
 }
 
 async function processUsersCSV (readFileCSV: typeof readFile) {
