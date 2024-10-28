@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-magic-numbers */
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
 

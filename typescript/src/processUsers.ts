@@ -1,21 +1,22 @@
-/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { readFile } from 'fs/promises'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
 export async function processUsers (log = console.log): Promise<void> {
-	const usersFromCSV = await processUsersCSV(readFile)
-	const usersFromAPI = await processUsersAPI(fetch)
+	const usersFromCSV = await processUsersFromRepository(readFile)
+	const usersFromAPI = await processUsersFromService(fetch)
 	const users = usersFromCSV.concat(usersFromAPI)
 	printUsers(users, log)
 }
 
-async function processUsersCSV (readFileCSV: typeof readFile) {
+type UserRepository = typeof readFile
+
+async function processUsersFromRepository (userRepository: UserRepository) {
 	const filename = fileURLToPath(import.meta.url)
 	const getcurrentworkingDirectory = path.dirname(filename)
 
 	// fields: ID, gender, Name ,country, postcode, email, Birthdate
-	const q = (await readFileCSV(
+	const q = (await userRepository(
 		getcurrentworkingDirectory + '/../../users.csv', 'utf8'
 	)).split('\n')
 
@@ -28,12 +29,15 @@ async function processUsersCSV (readFileCSV: typeof readFile) {
 	return csvProvider
 }
 
-async function processUsersAPI (fetchAPI: typeof fetch) {
-	/** This kata uses "fetch()", be aware you need at least Node 18 to run the script */
+type UserService = typeof fetch
+type UserResponse = { results: Array<{ gender: string, name: { first: string, last: string }, location: { country: string, postcode: string }, email: string } > }
+
+async function processUsersFromService (userService: UserService) {
 	const USER_URL = 'https://randomuser.me/api/?inc=gender,name,email,location&results=5&seed=a9b25cd955e2037h'
 
-	const response = await (await fetchAPI(USER_URL)).json() as { results: Array<{ gender: string, name: { first: string, last: string }, location: { country: string, postcode: string }, email: string } > }
-	const webProvider = response.results // eslint-disable-line @typescript-eslint/prefer-destructuring
+	const response = await userService(USER_URL)
+	const bodyResponse = (await response.json()) as UserResponse
+	const webProvider = bodyResponse.results
 
 	const b: User[] = []
 	let i = 100000000000
@@ -47,14 +51,15 @@ async function processUsersAPI (fetchAPI: typeof fetch) {
 				webProvider[j].location.country,
 				webProvider[j].location.postcode,
 				webProvider[j].email,
-				new Date().getFullYear().toString() // birhtday
+				new Date().getFullYear().toString()
 			]))
 		}
 	}
 	return b
 }
 
-function printUsers (users: User[], log: typeof console.log) {
+type Log = typeof console.log
+function printUsers (users: User[], log: Log) {
 	log('*********************************************************************************')
 	log('* ID\t\t* COUNTRY\t* NAME\t\t* EMAIL\t\t\t\t*')
 	log('*********************************************************************************')
@@ -66,6 +71,7 @@ function printUsers (users: User[], log: typeof console.log) {
 }
 
 type User = ReturnType<typeof newUser>
+
 function newUser (data: string[]) {
 	return {
 		id: data[0],
