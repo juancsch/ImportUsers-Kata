@@ -6,10 +6,10 @@ import { fileURLToPath } from 'url'
 export async function processUsers (log = console.log): Promise<void> {
 
 	// Parse CSV file
-	const csvProvider: string[][] = await processUsersCSV(readFile)
+	const csvProvider = await processUsersCSV(readFile)
 
 	// Parse URL content
-	const b: string[][] = await processUsersAPI(fetch)
+	const b = await processUsersAPI(fetch)
 
 	/**
 	 * Shape: providers array[ id -> number,
@@ -32,17 +32,12 @@ async function processUsersCSV (readFileCSV: typeof readFile) {
 		getcurrentworkingDirectory + '/../../users.csv', 'utf8'
 	)).split('\n')
 
-	const csvProvider: string[][] = []
-	for (let h = 0; h < q.length; h++) {
+	const csvProvider: User[] = []
+	for (let h = 1; h < q.length; h++) {
 		if (q[h] === '') continue
-		csvProvider.push(q[h].split(','))
+		csvProvider.push(newUser(q[h].split(',')))
 	}
 
-	const csvProviders: string[][] = []
-	csvProviders.forEach((a) => {
-		a.concat(csvProvider[0])
-	})
-	csvProvider.shift() // Remove header column
 	return csvProvider
 }
 
@@ -53,12 +48,12 @@ async function processUsersAPI (fetchAPI: typeof fetch) {
 	const response = await (await fetchAPI(USER_URL)).json() as { results: Array<{ gender: string, name: { first: string, last: string }, location: { country: string, postcode: string }, email: string } > }
 	const webProvider = response.results // eslint-disable-line @typescript-eslint/prefer-destructuring
 
-	const b: string[][] = []
+	const b: User[] = []
 	let i = 100000000000
 	for (let j = 0; j < webProvider.length; j++) {
 		i++
 		if (webProvider[j] instanceof Object) {
-			b.push([
+			b.push(newUser([
 				i.toString(), // id
 				webProvider[j].gender,
 				webProvider[j].name.first + ' ' + webProvider[j].name.last,
@@ -66,19 +61,32 @@ async function processUsersAPI (fetchAPI: typeof fetch) {
 				webProvider[j].location.postcode,
 				webProvider[j].email,
 				new Date().getFullYear().toString() // birhtday
-			])
+			]))
 		}
 	}
 	return b
 }
 
-function printUsers (providers: string[][], log: typeof console.log) {
+function printUsers (users: User[], log: typeof console.log) {
 	log('*********************************************************************************')
 	log('* ID\t\t* COUNTRY\t* NAME\t\t* EMAIL\t\t\t\t*')
 	log('*********************************************************************************')
-	for (let j = 0; j < providers.length; j++) {
-		log(`* ${providers[j][0]}\t* ${providers[j][3]}\t* ${providers[j][2]}\t* ${providers[j][5]}\t*`)
+	for (let j = 0; j < users.length; j++) {
+		log(`* ${users[j].id}\t* ${users[j].country}\t* ${users[j].name}\t* ${users[j].email}\t*`)
 	}
 	log('*********************************************************************************')
-	log(providers.length + ' users in total!')
+	log(users.length + ' users in total!')
+}
+
+type User = ReturnType<typeof newUser>
+function newUser (data: string[]) {
+	return {
+		id: data[0],
+		gender: data[1],
+		name: data[2],
+		country: data[3],
+		postcode: data[4],
+		email: data[5],
+		birthdate: data[6]
+	}
 }
