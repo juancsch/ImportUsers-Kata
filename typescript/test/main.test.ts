@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import { describe, test } from 'node:test'
 
-import { processUsers } from '../src/processUsers.js'
+import { processUsers } from '../src/processUsers/index.js'
 
 void describe('Import User Kata', () => {
 
@@ -33,6 +33,5 @@ void describe('Import User Kata', () => {
 		assert.strictEqual(logs[14], '* 100000000005	* Netherlands	* Irina Kaptein	* irina.kaptein@example.com	*')
 		assert.strictEqual(logs[15], '*********************************************************************************')
 		assert.strictEqual(logs[16], '12 users in total!')
-
 	})
 })
