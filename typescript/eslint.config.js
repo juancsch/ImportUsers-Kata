@@ -1,25 +1,35 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import eslint from '@eslint/js'
-import stylistic from '@stylistic/eslint-plugin'
-import eslintLove from 'eslint-config-love'
+import eslintStylistic from '@stylistic/eslint-plugin'
+import eslintTypescript from 'typescript-eslint'
 
 export default [
-	{ files: ['**/*.ts'] },
+	{
+		files: ['**/*.ts'],
+		ignores: ['node_modules/**/*', 'lib/**/*']
+	},
 	eslint.configs.recommended,
-	stylistic.configs.customize({
+	eslintStylistic.configs.customize({
 		semi: false,
 		indent: 'tab',
 		quotes: 'single',
 		commaDangle: 'never',
-		braceStyle: '1tbs',
-		jsx: false
+		braceStyle: '1tbs'
 	}),
-	{ ...eslintLove },
+	...eslintTypescript.config(
+		eslintTypescript.configs.strictTypeChecked,
+		eslintTypescript.configs.stylisticTypeChecked
+	),
 	{
 		languageOptions: {
 			globals: {
 				console: true,
-				fetch: true
+				fetch: true,
+				BufferEncoding: true
+			},
+			parserOptions: {
+				// ecmaVersion: 'latest',
+				// sourceType: 'module',
+				project: './tsconfig.json'
 			}
 		},
 		rules: {
@@ -27,10 +37,11 @@ export default [
 			'@stylistic/padded-blocks': 'off', // ['error', 'always'],
 			'@stylistic/space-before-function-paren': ['error', 'always'],
 			// typescript rules
-			'@typescript-eslint/explicit-function-return-type': 'off',
 			'@typescript-eslint/consistent-type-definitions': ['error', 'type'],
-			'@typescript-eslint/no-magic-numbers': ['error', { ignore: [0, 1] }]
-			// '@typescript-eslint/explicit-module-boundary-types': ['error']
+			'@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
+			'@typescript-eslint/restrict-template-expressions': ['error', { allowNullish: true }],
+			'@typescript-eslint/prefer-for-of': 'off',
+			'@typescript-eslint/restrict-plus-operands': 'off'
 		}
 	}
 ]
