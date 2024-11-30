@@ -7,15 +7,13 @@ void describe('Import User Kata', () => {
 
 	void test('should run process users', async () => {
 		// Given
-		const logs: string[] = []
-		const logSpy = (msg: string) => {
-			logs.push(msg)
-		}
+		const logSpy = LogSpy()
 
 		// When
-		await processUsers(logSpy)
+		await processUsers(logSpy.log)
 
 		// Then
+		const logs = logSpy.calls
 		assert.strictEqual(logs[0], '*********************************************************************************')
 		assert.strictEqual(logs[1], '* ID		* COUNTRY	* NAME		* EMAIL				*')
 		assert.strictEqual(logs[2], '*********************************************************************************')
@@ -33,5 +31,14 @@ void describe('Import User Kata', () => {
 		assert.strictEqual(logs[14], '* 100000000005	* Netherlands	* Irina Kaptein	* irina.kaptein@example.com	*')
 		assert.strictEqual(logs[15], '*********************************************************************************')
 		assert.strictEqual(logs[16], '12 users in total!')
+		console.log(logs)
 	})
 })
+
+function LogSpy () {
+	const calls: string[] = []
+	return {
+		log: (message: string) => calls.push(message),
+		calls
+	}
+}
